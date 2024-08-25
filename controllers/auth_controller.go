@@ -14,13 +14,13 @@ import (
 	"github.com/spf13/viper"
 	"gorm.io/gorm"
 	"net/url"
-	"sort"
 	"strings"
 )
 
 func Register(input *models.LoginInput) (*models.User, error) {
 	username := input.FirstName + input.LastName
 	inviteCode := common.GenerateInviteCode(8)
+
 	user := models.User{
 		Username:         username,
 		TelegramID:       input.ID,
@@ -133,11 +133,9 @@ func validataLoginData(initData *models.AuthTelegramInput) (string, bool) {
 			data = append(data, key+"="+value)
 		}
 	}
-	sort.Strings(data)
 	joinedPairs := strings.Join(data, "\n")
 	secretKey := generateSecretKey(token)
 	calculatedHash := calculateHMAC(secretKey, joinedPairs)
-
 	if calculatedHash == hash {
 		return joinedPairs, true
 	}
@@ -170,6 +168,7 @@ func formatUserInfo(data string) (*models.LoginInput, error) {
 		if startParam != "" && !strings.Contains(userJsonStr, `"start_param"`) {
 			userJsonStr = userJsonStr[:len(userJsonStr)-1] + `,"start_param":"` + startParam + `"}`
 		}
+
 	}
 
 	var input models.LoginInput

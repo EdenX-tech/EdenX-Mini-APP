@@ -29,8 +29,8 @@ var userQuestionCache = struct {
 
 var activeSessions sync.Map
 
-func sendQuestion(userID, questionType uint) (error, *models.QuestionResponse) {
-	question, err := services.GetRandomQuestion(questionType)
+func sendQuestion(userID, questionType uint, language string) (error, *models.QuestionResponse) {
+	question, err := services.GetRandomQuestion(questionType, language)
 
 	if err != nil {
 		return err, nil
@@ -70,6 +70,14 @@ func CacheUserQuestion(userID uint, questionID uint, correctOption uint, correct
 
 func WebSocketHandler(c *gin.Context) {
 	user, exists := c.Get("user")
+	language, exists := c.Get("language")
+	langStr, ok := language.(string)
+	if !ok {
+		if !exists {
+			common.ErrorJson(1000, c)
+			return
+		}
+	}
 
 	if !exists {
 		common.ErrorJson(1000, c)
@@ -126,7 +134,7 @@ func WebSocketHandler(c *gin.Context) {
 		default:
 			_, message, err := conn.ReadMessage()
 			if common.HandleError(conn, err, 1001, c) {
-
+				println("err:", err.Error())
 				return
 			}
 
@@ -140,6 +148,7 @@ func WebSocketHandler(c *gin.Context) {
 			decryptedJson, err := utils.Decrypt(encryptedInput.Data)
 			if err != nil {
 				if common.HandleError(conn, err, 1001, c) {
+					println("Decrypt:", err.Error())
 					return
 				}
 			}
@@ -159,7 +168,7 @@ func WebSocketHandler(c *gin.Context) {
 					return
 				}
 
-				errBool, questionResponse := TodoStartAnswering(currentUser.ID, messageTodoType.QuestionType)
+				errBool, questionResponse := TodoStartAnswering(currentUser.ID, messageTodoType.QuestionType, langStr)
 				if errBool != true {
 					common.ErrorSocketJson(conn, 6100, c)
 					return
@@ -189,8 +198,8 @@ func WebSocketHandler(c *gin.Context) {
 	}
 }
 
-func TodoStartAnswering(userID, questionType uint) (bool, *models.QuestionResponse) {
-	err, questionResponse := sendQuestion(userID, questionType)
+func TodoStartAnswering(userID, questionType uint, language string) (bool, *models.QuestionResponse) {
+	err, questionResponse := sendQuestion(userID, questionType, language)
 	if err != nil {
 		return false, nil
 	}
