@@ -1,1 +1,1 @@
-# EdenX-Mini-APP
+# EdenX-Mini-APP V1.0.0
