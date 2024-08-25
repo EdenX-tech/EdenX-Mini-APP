@@ -22,7 +22,6 @@ var upgrader = websocket.Upgrader{
 	},
 }
 
-// 缓存用户当前问题以及答案
 var userQuestionCache = struct {
 	sync.RWMutex
 	m map[uint]models.UserQuestion
@@ -30,7 +29,6 @@ var userQuestionCache = struct {
 
 var activeSessions sync.Map
 
-// 生成题目并且发送
 func sendQuestion(userID, questionType uint) (error, *models.QuestionResponse) {
 	question, err := services.GetRandomQuestion(questionType)
 
@@ -48,7 +46,6 @@ func sendQuestion(userID, questionType uint) (error, *models.QuestionResponse) {
 			correctText = option.CorrectText
 		}
 	}
-	//	缓存当前问题以及正确答案
 	CacheUserQuestion(userID, question.ID, correctOption, correctText)
 
 	questionResponse := models.QuestionResponse{
@@ -108,7 +105,6 @@ func WebSocketHandler(c *gin.Context) {
 		return
 	}
 
-	// 启动心跳
 	go func() {
 		for {
 			select {
@@ -205,7 +201,7 @@ func TodoStartAnswering(userID, questionType uint) (bool, *models.QuestionRespon
 func todoEndAnswering(userEnergy *models.User, selectedOptions uint) (error, *models.AnswerResponse, uint) {
 	configPoints := viper.GetString("awards.points")
 	configPointsInt, _ := common.StrToInt(configPoints)
-	// 获取缓存中的问题以及正确答案
+
 	userQuestionCache.RLock()
 	userQuestion, exist := userQuestionCache.m[userEnergy.ID]
 	userQuestionCache.RUnlock()
@@ -226,7 +222,6 @@ func todoEndAnswering(userEnergy *models.User, selectedOptions uint) (error, *mo
 		userEnergy.Points = strconv.Itoa(pointsInt)
 		response.AwardsPoints = configPoints
 		response.IsCorrect = true
-		// 更新用户积分日志
 		services.UpdatePointsLogs(&models.UserPointsLogs{
 			UserID: userEnergy.ID,
 		})
@@ -238,13 +233,11 @@ func todoEndAnswering(userEnergy *models.User, selectedOptions uint) (error, *mo
 		}
 		response.AwardsPoints = "0"
 		response.IsCorrect = false
-		// 更新用户能量日志
 		services.UpdateEnergiesLogs(&models.UserEnergiesLogs{
 			UserID:       userEnergy.ID,
 			EnergiesType: 1,
 		})
 	}
-	// 更新用户信息
 	err := services.UpdateUser(userEnergy)
 	if err != nil {
 		return err, nil, 6100

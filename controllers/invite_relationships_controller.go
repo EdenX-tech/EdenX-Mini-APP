@@ -37,7 +37,6 @@ func UserInviteList(c *gin.Context) {
 		return
 	}
 
-	// 解码
 	decryptedJson, err := utils.Decrypt(pageInfo)
 	if err != nil {
 		common.ErrorJson(1000, c)

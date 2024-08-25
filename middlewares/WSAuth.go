@@ -22,13 +22,11 @@ func WSAuthMiddleware() gin.HandlerFunc {
 			c.Abort()
 			return
 		}
-		
-		// 解码
+
 		decryptedJson, err := utils.Decrypt(authHeader)
 		if err != nil {
 			common.ErrorJson(1000, c)
 		}
-		// 打印解密后的数据以进行调试
 		var wsAuthInput models.WsAuthInput
 
 		if err := json.Unmarshal(decryptedJson, &wsAuthInput); err != nil {
@@ -92,7 +90,6 @@ func WSAuthMiddleware() gin.HandlerFunc {
 			systemLanguage = "EN"
 			break
 		}
-		// 将用户信息存储在上下文中
 		c.Set("user", user)
 		c.Set("language", systemLanguage)
 

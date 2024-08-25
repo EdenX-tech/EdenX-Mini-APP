@@ -9,7 +9,6 @@ func SystemLanguageMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		language := c.GetHeader("Accept-Language")
 		if language == "" {
-			//c.JSON(http.StatusUnauthorized, gin.H{"error": "Accept-Language header required"})
 			common.ErrorJson(1000, c)
 			c.Abort()
 			return

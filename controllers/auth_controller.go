@@ -82,11 +82,8 @@ func Login(c *gin.Context) {
 						common.ErrorJson(3001, c)
 						return
 					}
-					//	更新邀请日志
 					dataId := services.UpdateInviteLogs(inviterId.ID, user.ID, input.InviteCode)
-					//	奖励邀请能量
 					services.AddEnergy(inviterId.ID, 1)
-					//	更新能量日志
 					services.UpdateEnergiesLogs(&models.UserEnergiesLogs{
 						UserID:       inviterId.ID,
 						EnergiesType: 3,
@@ -121,7 +118,6 @@ func Login(c *gin.Context) {
 
 func validataLoginData(initData *models.AuthTelegramInput) (string, bool) {
 	var token = viper.GetString("telegram.botToken")
-	// 解析 initData 为键值对
 	pairs := strings.Split(initData.InitData, "&")
 
 	var hash string
@@ -137,12 +133,9 @@ func validataLoginData(initData *models.AuthTelegramInput) (string, bool) {
 			data = append(data, key+"="+value)
 		}
 	}
-	// 按字母顺序排序
 	sort.Strings(data)
 	joinedPairs := strings.Join(data, "\n")
-	// 第一步：生成 secretKey
 	secretKey := generateSecretKey(token)
-	// 第二步：计算 HMAC
 	calculatedHash := calculateHMAC(secretKey, joinedPairs)
 
 	if calculatedHash == hash {
@@ -160,12 +153,10 @@ func formatUserInfo(data string) (*models.LoginInput, error) {
 
 	userJsonStr := userPart[:end+1]
 
-	// 检查是否有 start_param 参数
 	startParamStart := strings.Index(data, "start_param=")
 	if startParamStart != -1 {
 		startParamPart := data[startParamStart+len("start_param="):]
 
-		// 提取 start_param 的值，直到找到第一个无关字符（如 & 或 空格 或 换行符）
 		startParamEnd := strings.IndexAny(startParamPart, "& \n")
 		if startParamEnd == -1 {
 			startParamEnd = len(startParamPart)
@@ -173,11 +164,9 @@ func formatUserInfo(data string) (*models.LoginInput, error) {
 
 		startParam := startParamPart[:startParamEnd]
 
-		// 对 start_param 进行清理，去除换行符和转义
-		startParam = strings.TrimSpace(startParam) // 去除首尾的空格和换行符
+		startParam = strings.TrimSpace(startParam)
 		startParam = strings.ReplaceAll(startParam, `"`, `\"`)
 
-		// 将 start_param 添加到 userJsonStr，避免重复数据
 		if startParam != "" && !strings.Contains(userJsonStr, `"start_param"`) {
 			userJsonStr = userJsonStr[:len(userJsonStr)-1] + `,"start_param":"` + startParam + `"}`
 		}
@@ -193,14 +182,12 @@ func formatUserInfo(data string) (*models.LoginInput, error) {
 }
 
 func generateSecretKey(botToken string) []byte {
-	// 使用固定的字符串 "WebAppData" 生成 HMAC-SHA256
 	mac := hmac.New(sha256.New, []byte("WebAppData"))
 	mac.Write([]byte(botToken))
 	return mac.Sum(nil)
 }
 
 func calculateHMAC(secretKey []byte, joinedPairs string) string {
-	// 使用 secretKey 对 joinedPairs 进行 HMAC-SHA256 运算
 	mac := hmac.New(sha256.New, secretKey)
 	mac.Write([]byte(joinedPairs))
 	return hex.EncodeToString(mac.Sum(nil))

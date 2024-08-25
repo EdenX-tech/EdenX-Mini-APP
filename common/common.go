@@ -37,7 +37,6 @@ func ErrorJson(code uint, c *gin.Context) {
 		Message:   msg,
 	}
 	c.JSON(codeStatus, errorResponse)
-	// 终止后续处理
 	c.Abort()
 }
 
