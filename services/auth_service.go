@@ -53,3 +53,12 @@ func AddEnergy(userID uint, increment int) {
 	database.DB.Model(&user).Where("id = ?", userID).UpdateColumn("earn_energy", gorm.Expr("earn_energy + ?", increment))
 
 }
+
+func RestoreEnergy() error {
+	var user models.User
+	if err := database.DB.Model(&user).Where("energy < ?", 5).UpdateColumn("energy", 5).Error; err != nil {
+		println("energy error:", err.Error())
+		return err
+	}
+	return nil
+}
