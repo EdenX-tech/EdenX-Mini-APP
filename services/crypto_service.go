@@ -80,6 +80,7 @@ func Transfer(receive string, TransferAmount uint64) bool {
 
 	if err != nil {
 		panic("Failed to build transaction:" + err.Error())
+		return false
 	}
 
 	simulationResult, err := client.SimulateTransaction(rawTxn, account)
@@ -106,4 +107,5 @@ func Transfer(receive string, TransferAmount uint64) bool {
 	}
 
 	println("Transaction submitted:", txn.Success)
+	return true
 }
