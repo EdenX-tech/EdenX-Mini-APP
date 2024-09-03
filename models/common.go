@@ -96,3 +96,12 @@ type PageAndPerPage struct {
 	Page    int `json:"page" binding:"required"`
 	PerPage int `json:"per_page" binding:"required"`
 }
+
+type ReturnEarnResult struct {
+	IsEarn bool   `json:"is_earn"`
+	Amount uint64 `json:"amount"`
+}
+
+type TransferRequest struct {
+	Address string `json:"address"`
+}

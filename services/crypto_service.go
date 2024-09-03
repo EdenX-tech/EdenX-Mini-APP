@@ -8,8 +8,6 @@ import (
 	"github.com/aptos-labs/aptos-go-sdk/crypto"
 	"github.com/spf13/viper"
 	"math/big"
-	"math/rand"
-	"time"
 )
 
 func aptosClient() (cli *aptos.Client, err error) {
@@ -34,8 +32,7 @@ func getAccountAddress() (*aptos.Account, error) {
 	return account, err
 }
 
-func Transfer(receive string) {
-
+func Transfer(receive string, TransferAmount uint64) bool {
 	client, err := aptosClient()
 	if err != nil {
 		println("Failed to create client:" + err.Error())
@@ -47,13 +44,12 @@ func Transfer(receive string) {
 	}
 
 	moduleAddress, err := aptos.ParseHex(viper.GetString("crypto.edenx"))
-	println("moduleAddress:", moduleAddress)
+
 	receiveBytes, err := aptos.ParseHex(receive)
 	if err != nil {
 		println("Failed to parse receive address:" + err.Error())
 	}
 
-	var TransferAmount = randomEarn()
 	// 打印调试信息
 	fmt.Printf("TransferAmount (microcoins): %d\n", TransferAmount)
 	fmt.Printf("TransferAmount (Aptos coins): %.6f\n", float64(TransferAmount)/1000000)
@@ -89,17 +85,20 @@ func Transfer(receive string) {
 	simulationResult, err := client.SimulateTransaction(rawTxn, account)
 	if err != nil {
 		panic("Failed to simulate transaction:" + err.Error())
+		return false
 	}
 	println("simulationResult:", simulationResult)
 
 	submitResponse, err := client.BuildSignAndSubmitTransaction(account, aptos.TransactionPayload{Payload: payload})
 	if err != nil {
 		println("Failed to submit transaction: " + err.Error())
+		return false
 	}
 
 	txn, err := client.WaitForTransaction(submitResponse.Hash)
 	if err != nil {
 		println("Failed to wait for transaction: " + err.Error())
+		return false
 	}
 
 	if !txn.Success {
@@ -107,16 +106,4 @@ func Transfer(receive string) {
 	}
 
 	println("Transaction submitted:", txn.Success)
-}
-
-func randomEarn() uint64 {
-	source := rand.NewSource(time.Now().UnixNano())
-	random := rand.New(source)
-
-	// 生成一个在 0.01 到 0.09 之间的随机浮点数
-	randomAmount := 0.01 + random.Float64()*(0.09-0.01)
-
-	amount := uint64(randomAmount * 100000000)
-	println("randomEarn:", amount)
-	return amount
 }
