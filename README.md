@@ -21,5 +21,5 @@ Supports interaction with Aptos Move contracts, enabling on-chain functionality.
 
 # DEMO Access
 
-To explore the features, visit the demo at:
-t.me/EdenX_Mini_bot/EdenX
+To explore the features, visit the demo at:  
+[EdenX Mini Bot on Telegram](https://t.me/EdenX_Mini_bot/EdenX)
