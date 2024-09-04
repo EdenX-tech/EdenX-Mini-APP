@@ -1,13 +1,10 @@
 package services
 
 import (
-	"encoding/hex"
-	"fmt"
 	"github.com/aptos-labs/aptos-go-sdk"
 	"github.com/aptos-labs/aptos-go-sdk/bcs"
 	"github.com/aptos-labs/aptos-go-sdk/crypto"
 	"github.com/spf13/viper"
-	"math/big"
 )
 
 func aptosClient() (cli *aptos.Client, err error) {
@@ -17,7 +14,7 @@ func aptosClient() (cli *aptos.Client, err error) {
 }
 
 func getAccountAddress() (*aptos.Account, error) {
-	privateKeyHex := "0x16627152280bc14ecc8410dd2293544829c8ff051d5d7617f7a43ef76d1aba13"
+	privateKeyHex := viper.GetString("crypto.privateKey")
 	privateKey := &crypto.Ed25519PrivateKey{}
 
 	err := privateKey.FromHex(privateKeyHex)
@@ -28,7 +25,6 @@ func getAccountAddress() (*aptos.Account, error) {
 
 	account, err := aptos.NewAccountFromSigner(privateKey)
 
-	//  account.Address
 	return account, err
 }
 
@@ -50,18 +46,11 @@ func Transfer(receive string, TransferAmount uint64) bool {
 		println("Failed to parse receive address:" + err.Error())
 	}
 
-	// 打印调试信息
-	fmt.Printf("TransferAmount (microcoins): %d\n", TransferAmount)
-	fmt.Printf("TransferAmount (Aptos coins): %.6f\n", float64(TransferAmount)/1000000)
 	// 将 amount 转换为字节数组
 	amountBytes, err := bcs.SerializeU64(TransferAmount)
 	if err != nil {
 		println("Failed to serialize transfer amount:" + err.Error())
 	}
-	fmt.Printf("Serialized amountBytes: %x\n", amountBytes)
-	data, _ := hex.DecodeString("ac1c010000000000")
-	value := new(big.Int).SetBytes(data)
-	fmt.Println("Deserialized value:", value)
 	println("address:", receive)
 	payload := &aptos.EntryFunction{
 		Module: aptos.ModuleId{

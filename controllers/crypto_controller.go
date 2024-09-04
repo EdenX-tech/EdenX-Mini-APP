@@ -59,7 +59,7 @@ func randomEarn() uint64 {
 	// 生成一个在 0.01 到 0.09 之间的随机浮点数
 	randomAmount := 0.01 + random.Float64()*(0.09-0.01)
 
-	amount := uint64(randomAmount * 1000000)
+	amount := uint64(randomAmount * 100000000)
 	println("randomEarn:", amount)
 	return amount
 }
